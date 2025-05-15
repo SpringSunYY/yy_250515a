@@ -233,6 +233,11 @@
                 <artifactId>grade-common</artifactId>
                 <version>${grade.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.lz</groupId>
+                <artifactId>grade-manage</artifactId>
+                <version>${grade.version}</version>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
@@ -244,6 +249,7 @@
         <module>grade-quartz</module>
         <module>grade-generator</module>
         <module>grade-common</module>
+        <module>grade-manage</module>
     </modules>
     <packaging>pom</packaging>
 
