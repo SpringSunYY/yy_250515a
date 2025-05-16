@@ -3,8 +3,11 @@ package com.lz.manage.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.security.access.prepost.PreAuthorize;
+
 import javax.annotation.Resource;
+
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -25,6 +28,7 @@ import com.lz.manage.model.dto.gradeInfo.GradeInfoEdit;
 import com.lz.manage.service.IGradeInfoService;
 import com.lz.common.utils.poi.ExcelUtil;
 import com.lz.common.core.page.TableDataInfo;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 学生成绩信息Controller
@@ -34,8 +38,7 @@ import com.lz.common.core.page.TableDataInfo;
  */
 @RestController
 @RequestMapping("/manage/gradeInfo")
-public class GradeInfoController extends BaseController
-{
+public class GradeInfoController extends BaseController {
     @Resource
     private IGradeInfoService gradeInfoService;
 
@@ -44,12 +47,11 @@ public class GradeInfoController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('manage:gradeInfo:list')")
     @GetMapping("/list")
-    public TableDataInfo list(GradeInfoQuery gradeInfoQuery)
-    {
+    public TableDataInfo list(GradeInfoQuery gradeInfoQuery) {
         GradeInfo gradeInfo = GradeInfoQuery.queryToObj(gradeInfoQuery);
         startPage();
         List<GradeInfo> list = gradeInfoService.selectGradeInfoList(gradeInfo);
-        List<GradeInfoVo> listVo= list.stream().map(GradeInfoVo::objToVo).collect(Collectors.toList());
+        List<GradeInfoVo> listVo = list.stream().map(GradeInfoVo::objToVo).collect(Collectors.toList());
         TableDataInfo table = getDataTable(list);
         table.setRows(listVo);
         return table;
@@ -71,8 +73,7 @@ public class GradeInfoController extends BaseController
     @PreAuthorize("@ss.hasPermi('manage:gradeInfo:export')")
     @Log(title = "学生成绩信息", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, GradeInfoQuery gradeInfoQuery)
-    {
+    public void export(HttpServletResponse response, GradeInfoQuery gradeInfoQuery) {
         GradeInfo gradeInfo = GradeInfoQuery.queryToObj(gradeInfoQuery);
         List<GradeInfo> list = gradeInfoService.selectGradeInfoList(gradeInfo);
         ExcelUtil<GradeInfo> util = new ExcelUtil<GradeInfo>(GradeInfo.class);
@@ -84,8 +85,7 @@ public class GradeInfoController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('manage:gradeInfo:query')")
     @GetMapping(value = "/{gradeId}")
-    public AjaxResult getInfo(@PathVariable("gradeId") Long gradeId)
-    {
+    public AjaxResult getInfo(@PathVariable("gradeId") Long gradeId) {
         GradeInfo gradeInfo = gradeInfoService.selectGradeInfoByGradeId(gradeId);
         return success(GradeInfoVo.objToVo(gradeInfo));
     }
@@ -96,8 +96,7 @@ public class GradeInfoController extends BaseController
     @PreAuthorize("@ss.hasPermi('manage:gradeInfo:add')")
     @Log(title = "学生成绩信息", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody GradeInfoInsert gradeInfoInsert)
-    {
+    public AjaxResult add(@RequestBody GradeInfoInsert gradeInfoInsert) {
         GradeInfo gradeInfo = GradeInfoInsert.insertToObj(gradeInfoInsert);
         return toAjax(gradeInfoService.insertGradeInfo(gradeInfo));
     }
@@ -108,8 +107,7 @@ public class GradeInfoController extends BaseController
     @PreAuthorize("@ss.hasPermi('manage:gradeInfo:edit')")
     @Log(title = "学生成绩信息", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody GradeInfoEdit gradeInfoEdit)
-    {
+    public AjaxResult edit(@RequestBody GradeInfoEdit gradeInfoEdit) {
         GradeInfo gradeInfo = GradeInfoEdit.editToObj(gradeInfoEdit);
         return toAjax(gradeInfoService.updateGradeInfo(gradeInfo));
     }
@@ -119,9 +117,25 @@ public class GradeInfoController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('manage:gradeInfo:remove')")
     @Log(title = "学生成绩信息", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{gradeIds}")
-    public AjaxResult remove(@PathVariable Long[] gradeIds)
-    {
+    @DeleteMapping("/{gradeIds}")
+    public AjaxResult remove(@PathVariable Long[] gradeIds) {
         return toAjax(gradeInfoService.deleteGradeInfoByGradeIds(gradeIds));
+    }
+
+    @PreAuthorize("@ss.hasPermi('manage:gradeInfo:import')")
+    @Log(title = "导入学生成绩", businessType = BusinessType.IMPORT)
+    @PostMapping("/importData")
+    public AjaxResult importData(MultipartFile file) throws Exception {
+        ExcelUtil<GradeInfo> util = new ExcelUtil<GradeInfo>(GradeInfo.class);
+        List<GradeInfo> list = util.importExcel(file.getInputStream());
+        String message = gradeInfoService.importGradeInfo(list);
+        return success(message);
+    }
+
+    @PreAuthorize("@ss.hasPermi('manage:gradeInfo:import')")
+    @PostMapping("/importTemplate")
+    public void importTemplate(HttpServletResponse response) {
+        ExcelUtil<GradeInfo> util = new ExcelUtil<GradeInfo>(GradeInfo.class);
+        util.importTemplateExcel(response, "学生成绩数据");
     }
 }

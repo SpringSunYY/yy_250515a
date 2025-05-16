@@ -66,25 +66,25 @@
           end-placeholder="结束日期"
         ></el-date-picker>
       </el-form-item>
-<!--      <el-form-item label="更新人" prop="updateBy">-->
-<!--        <el-input-->
-<!--          v-model="queryParams.updateBy"-->
-<!--          placeholder="请输入更新人"-->
-<!--          clearable-->
-<!--          @keyup.enter.native="handleQuery"-->
-<!--        />-->
-<!--      </el-form-item>-->
-<!--      <el-form-item label="更新时间">-->
-<!--        <el-date-picker-->
-<!--          v-model="daterangeUpdateTime"-->
-<!--          style="width: 240px"-->
-<!--          value-format="yyyy-MM-dd"-->
-<!--          type="daterange"-->
-<!--          range-separator="-"-->
-<!--          start-placeholder="开始日期"-->
-<!--          end-placeholder="结束日期"-->
-<!--        ></el-date-picker>-->
-<!--      </el-form-item>-->
+      <!--      <el-form-item label="更新人" prop="updateBy">-->
+      <!--        <el-input-->
+      <!--          v-model="queryParams.updateBy"-->
+      <!--          placeholder="请输入更新人"-->
+      <!--          clearable-->
+      <!--          @keyup.enter.native="handleQuery"-->
+      <!--        />-->
+      <!--      </el-form-item>-->
+      <!--      <el-form-item label="更新时间">-->
+      <!--        <el-date-picker-->
+      <!--          v-model="daterangeUpdateTime"-->
+      <!--          style="width: 240px"-->
+      <!--          value-format="yyyy-MM-dd"-->
+      <!--          type="daterange"-->
+      <!--          range-separator="-"-->
+      <!--          start-placeholder="开始日期"-->
+      <!--          end-placeholder="结束日期"-->
+      <!--        ></el-date-picker>-->
+      <!--      </el-form-item>-->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -129,6 +129,16 @@
       </el-col>
       <el-col :span="1.5">
         <el-button
+          type="info"
+          icon="el-icon-upload2"
+          size="mini"
+          @click="handleImport"
+          v-hasPermi="['manage:gradeInfo:import']"
+        >导入
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
           type="warning"
           plain
           icon="el-icon-download"
@@ -144,7 +154,7 @@
           plain
           size="mini"
           v-hasPermi="['manage:gradeInfo:list']"
-        >平均分:{{statics.avgScore}}
+        >平均分:{{ statics.avgScore }}
         </el-button>
       </el-col>
       <el-col :span="1.5">
@@ -153,7 +163,7 @@
           plain
           size="mini"
           v-hasPermi="['manage:gradeInfo:list']"
-        >最高分：{{statics.maxScore}}
+        >最高分：{{ statics.maxScore }}
         </el-button>
       </el-col>
       <el-col :span="1.5">
@@ -162,7 +172,7 @@
           plain
           size="mini"
           v-hasPermi="['manage:gradeInfo:list']"
-        >最低分：{{ statics.minScore}}
+        >最低分：{{ statics.minScore }}
         </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
@@ -288,6 +298,36 @@
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
+
+    <!-- 学生档案导入对话框 -->
+    <el-dialog :title="upload.title" :visible.sync="upload.open" width="400px">
+      <el-upload
+        ref="upload"
+        :limit="1"
+        accept=".xlsx, .xls"
+        :headers="upload.headers"
+        :action="upload.url"
+        :disabled="upload.isUploading"
+        :on-progress="handleFileUploadProgress"
+        :on-success="handleFileSuccess"
+        :auto-upload="false"
+        drag
+      >
+        <i class="el-icon-upload"></i>
+        <div class="el-upload__text">
+          将文件拖到此处，或
+          <em>点击上传</em>
+        </div>
+        <div class="el-upload__tip" slot="tip">
+          <el-link type="info" style="font-size:12px" @click="importTemplate">下载模板</el-link>
+        </div>
+        <div class="el-upload__tip" style="color:red" slot="tip">提示：仅允许导入“xls”或“xlsx”格式文件！</div>
+      </el-upload>
+      <div slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="submitFileForm">确 定</el-button>
+        <el-button @click="upload.open = false">取 消</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -303,6 +343,7 @@ import {
 import { checkPermi } from '@/utils/permission'
 import { allocatedUserList } from '@/api/system/role'
 import { listCourseInfo } from '@/api/manage/courseInfo'
+import { getToken } from '@/utils/auth'
 
 export default {
   name: 'GradeInfo',
@@ -315,38 +356,24 @@ export default {
       },
       isCourseQuery: false,
       //课程相关信息
-      courseInfoList:
-        [],
-      courseLoading:
-        false,
-      courseQueryParams:
-        {
-          courseName: '',
-          roleId:
-            100,
-          pageNum:
-            1,
-          pageSize:
-            100
-        }
-      ,
+      courseInfoList: [],
+      courseLoading: false,
+      courseQueryParams: {
+        courseName: '',
+        roleId: 100,
+        pageNum: 1,
+        pageSize: 100
+      },
       isUserQuery: false,
       //用户相关信息
-      userInfoList:
-        [],
-      userLoading:
-        false,
-      userQueryParams:
-        {
-          userName: '',
-          roleId:
-            100,
-          pageNum:
-            1,
-          pageSize:
-            100
-        }
-      ,
+      userInfoList: [],
+      userLoading: false,
+      userQueryParams: {
+        userName: '',
+        roleId: 100,
+        pageNum: 1,
+        pageSize: 100
+      },
       //表格展示列
       columns: [
         { key: 0, label: '成绩编号', visible: false },
@@ -364,83 +391,71 @@ export default {
       loading:
         true,
       // 选中数组
-      ids:
-        [],
+      ids: [],
       // 非单个禁用
-      single:
-        true,
+      single: true,
       // 非多个禁用
-      multiple:
-        true,
+      multiple: true,
       // 显示搜索条件
-      showSearch:
-        true,
+      showSearch: true,
       // 总条数
-      total:
-        0,
+      total: 0,
       // 学生成绩信息表格数据
-      gradeInfoList:
-        [],
+      gradeInfoList: [],
       // 弹出层标题
-      title:
-        '',
+      title: '',
       // 是否显示弹出层
-      open:
-        false,
+      open: false,
       // 备注时间范围
-      daterangeCreateTime:
-        [],
+      daterangeCreateTime: [],
       // 备注时间范围
-      daterangeUpdateTime:
-        [],
+      daterangeUpdateTime: [],
       // 查询参数
-      queryParams:
-        {
-          pageNum: 1,
-          pageSize:
-            10,
-          gradeId:
-            null,
-          courseId:
-            null,
-          gradeDesc:
-            null,
-          userId:
-            null,
-          createBy:
-            null,
-          createTime:
-            null,
-          updateBy:
-            null,
-          updateTime:
-            null
-        }
+      queryParams: {
+        pageNum: 1,
+        pageSize: 10,
+        gradeId: null,
+        courseId: null,
+        gradeDesc: null,
+        userId: null,
+        createBy: null,
+        createTime: null,
+        updateBy: null,
+        updateTime: null
+      }
       ,
       // 表单参数
-      form: {}
-      ,
+      form: {},
       // 表单校验
       rules: {
         courseId: [
           { required: true, message: '课程名称不能为空', trigger: 'blur' }
         ],
-        score:
-          [
-            { required: true, message: '学生成绩不能为空', trigger: 'blur' }
-          ],
-        userId:
-          [
-            { required: true, message: '学生不能为空', trigger: 'blur' }
-          ],
-        createBy:
-          [
-            { required: true, message: '创建人不能为空', trigger: 'blur' }
-          ],
-        createTime:
-          [
-            { required: true, message: '创建时间不能为空', trigger: 'blur' }
-          ]
+        score: [
+          { required: true, message: '学生成绩不能为空', trigger: 'blur' }
+        ],
+        userId: [
+          { required: true, message: '学生不能为空', trigger: 'blur' }
+        ],
+        createBy: [
+          { required: true, message: '创建人不能为空', trigger: 'blur' }
+        ],
+        createTime: [
+          { required: true, message: '创建时间不能为空', trigger: 'blur' }
+        ]
+      },
+      // 导入参数
+      upload: {
+        // 是否显示弹出层（用户导入）
+        open: false,
+        // 弹出层标题（用户导入）
+        title: '',
+        // 是否禁用上传
+        isUploading: false,
+        // 设置上传的请求头部
+        headers: { Authorization: 'Bearer ' + getToken() },
+        // 上传的地址
+        url: process.env.VUE_APP_BASE_API + '/manage/gradeInfo/importData'
       }
     }
   },
@@ -635,6 +650,31 @@ export default {
       this.download('manage/gradeInfo/export', {
         ...this.queryParams
       }, `gradeInfo_${new Date().getTime()}.xlsx`)
+    },
+    /** 导入按钮操作 */
+    handleImport() {
+      this.upload.title = '学生成绩导入'
+      this.upload.open = true
+    },
+    /** 下载模板操作 */
+    importTemplate() {
+      this.download('manage/gradeInfo/importTemplate', {}, `gradeInfo_template_${new Date().getTime()}.xlsx`)
+    },
+    // 文件上传中处理
+    handleFileUploadProgress(event, file, fileList) {
+      this.upload.isUploading = true
+    },
+    // 文件上传成功处理
+    handleFileSuccess(response, file, fileList) {
+      this.upload.open = false
+      this.upload.isUploading = false
+      this.$refs.upload.clearFiles()
+      this.$alert(response.msg, '导入结果', { dangerouslyUseHTMLString: true })
+      this.getList()
+    },
+    // 提交上传文件
+    submitFileForm() {
+      this.$refs.upload.submit()
     }
   }
 }

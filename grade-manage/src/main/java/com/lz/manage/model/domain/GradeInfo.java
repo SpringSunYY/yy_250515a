@@ -30,16 +30,17 @@ public class GradeInfo implements Serializable {
     /**
      * 成绩编号
      */
-    @Excel(name = "成绩编号")
+    @Excel(name = "成绩编号",type = Excel.Type.EXPORT)
     @TableId(value = "grade_id", type = IdType.ASSIGN_ID)
     private Long gradeId;
 
     /**
      * 课程名称
      */
-    @Excel(name = "课程名称")
+    @Excel(name = "课程名称", type = Excel.Type.EXPORT)
     @TableField(exist = false)
     private String courseName;
+    @Excel(name = "课程编号", type = Excel.Type.IMPORT)
     private Long courseId;
 
     /**
@@ -57,35 +58,36 @@ public class GradeInfo implements Serializable {
     /**
      * 学生
      */
-    @Excel(name = "学生")
+    @Excel(name = "学生",type = Excel.Type.EXPORT)
     @TableField(exist = false)
     private String userName;
+    @Excel(name = "学生编号", type = Excel.Type.IMPORT)
     private Long userId;
 
     /**
      * 创建人
      */
-    @Excel(name = "创建人")
+    @Excel(name = "创建人",type = Excel.Type.EXPORT)
     private String createBy;
 
     /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "创建时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @Excel(name = "创建时间", width = 30, dateFormat = "yyyy-MM-dd",type = Excel.Type.EXPORT)
     private Date createTime;
 
     /**
      * 更新人
      */
-    @Excel(name = "更新人")
+    @Excel(name = "更新人",type = Excel.Type.EXPORT)
     private String updateBy;
 
     /**
      * 更新时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd")
-    @Excel(name = "更新时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @Excel(name = "更新时间", width = 30, dateFormat = "yyyy-MM-dd",type = Excel.Type.EXPORT)
     private Date updateTime;
 
     /**

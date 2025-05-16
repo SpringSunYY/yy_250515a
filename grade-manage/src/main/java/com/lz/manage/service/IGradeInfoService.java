@@ -1,6 +1,7 @@
 package com.lz.manage.service;
 
 import java.util.List;
+
 import com.lz.manage.model.domain.GradeInfo;
 import com.lz.manage.model.vo.gradeInfo.GradeInfoStatics;
 import com.lz.manage.model.vo.gradeInfo.GradeInfoVo;
@@ -8,15 +9,16 @@ import com.lz.manage.model.dto.gradeInfo.GradeInfoQuery;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+
 /**
  * 学生成绩信息Service接口
  *
  * @author YY
  * @date 2025-05-16
  */
-public interface IGradeInfoService extends IService<GradeInfo>
-{
+public interface IGradeInfoService extends IService<GradeInfo> {
     //region mybatis代码
+
     /**
      * 查询学生成绩信息
      *
@@ -65,6 +67,7 @@ public interface IGradeInfoService extends IService<GradeInfo>
      */
     public int deleteGradeInfoByGradeId(Long gradeId);
     //endregion
+
     /**
      * 获取查询条件
      *
@@ -83,11 +86,23 @@ public interface IGradeInfoService extends IService<GradeInfo>
 
     /**
      * 统计分数
+     *
+     * @param gradeInfo
+     * @return GradeInfoStatics
      * @author: YY
      * @method: statics
      * @date: 2025/5/16 23:42
-     * @param gradeInfo
-     * @return GradeInfoStatics
      **/
     GradeInfoStatics statics(GradeInfo gradeInfo);
+
+    /**
+     * 导入学生成绩
+     *
+     * @param list
+     * @return String
+     * @author: YY
+     * @method: importGradeInfo
+     * @date: 2025/5/16 23:51
+     **/
+    String importGradeInfo(List<GradeInfo> list);
 }

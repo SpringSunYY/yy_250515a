@@ -204,4 +204,45 @@ public class GradeInfoServiceImpl extends ServiceImpl<GradeInfoMapper, GradeInfo
         return gradeInfoMapper.statics(gradeInfo);
     }
 
+    @Override
+    public String importGradeInfo(List<GradeInfo> list) {
+        //校验数据
+        if (StringUtils.isEmpty(list)) {
+            return StringUtils.format("导入数据不能为空！");
+        }
+        for (int i = 0; i < list.size(); i++) {
+            int index=i+1;
+            GradeInfo gradeInfo = list.get(i);
+            if (StringUtils.isNull(gradeInfo.getUserId())) {
+                return StringUtils.format("第{}行学生编号不能为空！",index);
+            }
+            if (StringUtils.isNull(gradeInfo.getCourseId())) {
+                return StringUtils.format("第{}行课程编号不能为空！",index);
+            }
+            if (StringUtils.isNull(gradeInfo.getScore())) {
+                return StringUtils.format("第{}行学生成绩不能为空！",index);
+            }
+        }
+        String username = SecurityUtils.getUsername();
+        Date nowDate = DateUtils.getNowDate();
+        for (int i = 0; i < list.size(); i++) {
+            int index=i+1;
+            GradeInfo gradeInfo = list.get(i);
+            //查询课程是否存在
+            CourseInfo courseInfo = courseInfoService.selectCourseInfoByCourseId(gradeInfo.getCourseId());
+            if (StringUtils.isNull(courseInfo)) {
+                return StringUtils.format("第{}行课程不存在！",index);
+            }
+            //查询学生是否存在
+            SysUser sysUser = userService.selectUserById(gradeInfo.getUserId());
+            if (StringUtils.isNull(sysUser)) {
+                return StringUtils.format("第{}行学生不存在！",index);
+            }
+            gradeInfo.setCreateBy(username);
+            gradeInfo.setCreateTime(nowDate);
+        }
+        this.saveBatch(list);
+        return StringUtils.format("成功导入{}条数据！",list.size());
+    }
+
 }
