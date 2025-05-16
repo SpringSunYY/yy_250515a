@@ -66,25 +66,25 @@
           end-placeholder="结束日期"
         ></el-date-picker>
       </el-form-item>
-      <el-form-item label="更新人" prop="updateBy">
-        <el-input
-          v-model="queryParams.updateBy"
-          placeholder="请输入更新人"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
-      </el-form-item>
-      <el-form-item label="更新时间">
-        <el-date-picker
-          v-model="daterangeUpdateTime"
-          style="width: 240px"
-          value-format="yyyy-MM-dd"
-          type="daterange"
-          range-separator="-"
-          start-placeholder="开始日期"
-          end-placeholder="结束日期"
-        ></el-date-picker>
-      </el-form-item>
+<!--      <el-form-item label="更新人" prop="updateBy">-->
+<!--        <el-input-->
+<!--          v-model="queryParams.updateBy"-->
+<!--          placeholder="请输入更新人"-->
+<!--          clearable-->
+<!--          @keyup.enter.native="handleQuery"-->
+<!--        />-->
+<!--      </el-form-item>-->
+<!--      <el-form-item label="更新时间">-->
+<!--        <el-date-picker-->
+<!--          v-model="daterangeUpdateTime"-->
+<!--          style="width: 240px"-->
+<!--          value-format="yyyy-MM-dd"-->
+<!--          type="daterange"-->
+<!--          range-separator="-"-->
+<!--          start-placeholder="开始日期"-->
+<!--          end-placeholder="结束日期"-->
+<!--        ></el-date-picker>-->
+<!--      </el-form-item>-->
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -136,6 +136,33 @@
           @click="handleExport"
           v-hasPermi="['manage:gradeInfo:export']"
         >导出
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="success"
+          plain
+          size="mini"
+          v-hasPermi="['manage:gradeInfo:list']"
+        >平均分:{{statics.avgScore}}
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="success"
+          plain
+          size="mini"
+          v-hasPermi="['manage:gradeInfo:list']"
+        >最高分：{{statics.maxScore}}
+        </el-button>
+      </el-col>
+      <el-col :span="1.5">
+        <el-button
+          type="success"
+          plain
+          size="mini"
+          v-hasPermi="['manage:gradeInfo:list']"
+        >最低分：{{ statics.minScore}}
         </el-button>
       </el-col>
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
@@ -208,7 +235,7 @@
     <!-- 添加或修改学生成绩信息对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="课程名称" prop="courseId"  v-if="isCourseQuery">
+        <el-form-item label="课程名称" prop="courseId" v-if="isCourseQuery">
           <el-select
             v-model="form.courseId"
             filterable
@@ -265,7 +292,14 @@
 </template>
 
 <script>
-import { listGradeInfo, getGradeInfo, delGradeInfo, addGradeInfo, updateGradeInfo } from '@/api/manage/gradeInfo'
+import {
+  listGradeInfo,
+  getGradeInfo,
+  delGradeInfo,
+  addGradeInfo,
+  updateGradeInfo,
+  staticsGradeInfo
+} from '@/api/manage/gradeInfo'
 import { checkPermi } from '@/utils/permission'
 import { allocatedUserList } from '@/api/system/role'
 import { listCourseInfo } from '@/api/manage/courseInfo'
@@ -274,26 +308,45 @@ export default {
   name: 'GradeInfo',
   data() {
     return {
+      statics: {
+        minScore: 0,
+        maxScore: 100,
+        avgScore: 0
+      },
       isCourseQuery: false,
       //课程相关信息
-      courseInfoList: [],
-      courseLoading: false,
-      courseQueryParams: {
-        courseName: '',
-        roleId: 100,
-        pageNum: 1,
-        pageSize: 100
-      },
+      courseInfoList:
+        [],
+      courseLoading:
+        false,
+      courseQueryParams:
+        {
+          courseName: '',
+          roleId:
+            100,
+          pageNum:
+            1,
+          pageSize:
+            100
+        }
+      ,
       isUserQuery: false,
       //用户相关信息
-      userInfoList: [],
-      userLoading: false,
-      userQueryParams: {
-        userName: '',
-        roleId: 100,
-        pageNum: 1,
-        pageSize: 100
-      },
+      userInfoList:
+        [],
+      userLoading:
+        false,
+      userQueryParams:
+        {
+          userName: '',
+          roleId:
+            100,
+          pageNum:
+            1,
+          pageSize:
+            100
+        }
+      ,
       //表格展示列
       columns: [
         { key: 0, label: '成绩编号', visible: false },
@@ -308,59 +361,86 @@ export default {
         { key: 9, label: '备注', visible: false }
       ],
       // 遮罩层
-      loading: true,
+      loading:
+        true,
       // 选中数组
-      ids: [],
+      ids:
+        [],
       // 非单个禁用
-      single: true,
+      single:
+        true,
       // 非多个禁用
-      multiple: true,
+      multiple:
+        true,
       // 显示搜索条件
-      showSearch: true,
+      showSearch:
+        true,
       // 总条数
-      total: 0,
+      total:
+        0,
       // 学生成绩信息表格数据
-      gradeInfoList: [],
+      gradeInfoList:
+        [],
       // 弹出层标题
-      title: '',
+      title:
+        '',
       // 是否显示弹出层
-      open: false,
+      open:
+        false,
       // 备注时间范围
-      daterangeCreateTime: [],
+      daterangeCreateTime:
+        [],
       // 备注时间范围
-      daterangeUpdateTime: [],
+      daterangeUpdateTime:
+        [],
       // 查询参数
-      queryParams: {
-        pageNum: 1,
-        pageSize: 10,
-        gradeId: null,
-        courseId: null,
-        gradeDesc: null,
-        userId: null,
-        createBy: null,
-        createTime: null,
-        updateBy: null,
-        updateTime: null
-      },
+      queryParams:
+        {
+          pageNum: 1,
+          pageSize:
+            10,
+          gradeId:
+            null,
+          courseId:
+            null,
+          gradeDesc:
+            null,
+          userId:
+            null,
+          createBy:
+            null,
+          createTime:
+            null,
+          updateBy:
+            null,
+          updateTime:
+            null
+        }
+      ,
       // 表单参数
-      form: {},
+      form: {}
+      ,
       // 表单校验
       rules: {
         courseId: [
           { required: true, message: '课程名称不能为空', trigger: 'blur' }
         ],
-        score: [
-          { required: true, message: '学生成绩不能为空', trigger: 'blur' }
-        ],
-        userId: [
-          { required: true, message: '学生不能为空', trigger: 'blur' }
-        ],
-        createBy: [
-          { required: true, message: '创建人不能为空', trigger: 'blur' }
-        ],
-        createTime: [
-          { required: true, message: '创建时间不能为空', trigger: 'blur' }
-        ]
+        score:
+          [
+            { required: true, message: '学生成绩不能为空', trigger: 'blur' }
+          ],
+        userId:
+          [
+            { required: true, message: '学生不能为空', trigger: 'blur' }
+          ],
+        createBy:
+          [
+            { required: true, message: '创建人不能为空', trigger: 'blur' }
+          ],
+        createTime:
+          [
+            { required: true, message: '创建时间不能为空', trigger: 'blur' }
+          ]
       }
     }
   },
@@ -459,6 +539,9 @@ export default {
         this.gradeInfoList = response.rows
         this.total = response.total
         this.loading = false
+      })
+      staticsGradeInfo(this.queryParams).then(res => {
+        this.statics = res.data
       })
     },
     // 取消按钮

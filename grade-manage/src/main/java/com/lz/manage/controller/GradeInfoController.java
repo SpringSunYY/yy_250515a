@@ -56,6 +56,16 @@ public class GradeInfoController extends BaseController
     }
 
     /**
+     * 查询学生成绩信息列表
+     */
+    @PreAuthorize("@ss.hasPermi('manage:gradeInfo:list')")
+    @GetMapping("/statics")
+    public AjaxResult statics(GradeInfoQuery gradeInfoQuery) {
+        GradeInfo gradeInfo = GradeInfoQuery.queryToObj(gradeInfoQuery);
+        return success(gradeInfoService.statics(gradeInfo));
+    }
+
+    /**
      * 导出学生成绩信息列表
      */
     @PreAuthorize("@ss.hasPermi('manage:gradeInfo:export')")

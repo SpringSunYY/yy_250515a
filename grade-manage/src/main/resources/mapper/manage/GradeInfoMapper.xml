@@ -47,11 +47,30 @@
                 and DATE_FORMAT(update_time, '%Y-%m-%d') between #{params.beginUpdateTime} and #{params.endUpdateTime}
             </if>
         </where>
+        order by score desc
     </select>
 
     <select id="selectGradeInfoByGradeId" parameterType="Long" resultMap="GradeInfoResult">
         <include refid="selectGradeInfoVo"/>
         where grade_id = #{gradeId}
+    </select>
+    <select id="statics" resultType="com.lz.manage.model.vo.gradeInfo.GradeInfoStatics">
+        select avg(score) avgScore, max(score) maxScore, min(score) minScore
+        from tb_grade_info
+        <where>
+            <if test="gradeId != null ">and grade_id = #{gradeId}</if>
+            <if test="courseId != null ">and course_id = #{courseId}</if>
+            <if test="gradeDesc != null  and gradeDesc != ''">and grade_desc = #{gradeDesc}</if>
+            <if test="userId != null ">and user_id = #{userId}</if>
+            <if test="createBy != null  and createBy != ''">and create_by like concat('%', #{createBy}, '%')</if>
+            <if test="params.beginCreateTime != null and params.beginCreateTime != '' and params.endCreateTime != null and params.endCreateTime != ''">
+                and DATE_FORMAT(create_time, '%Y-%m-%d') between #{params.beginCreateTime} and #{params.endCreateTime}
+            </if>
+            <if test="updateBy != null  and updateBy != ''">and update_by &lt;= #{updateBy}</if>
+            <if test="params.beginUpdateTime != null and params.beginUpdateTime != '' and params.endUpdateTime != null and params.endUpdateTime != ''">
+                and DATE_FORMAT(update_time, '%Y-%m-%d') between #{params.beginUpdateTime} and #{params.endUpdateTime}
+            </if>
+        </where>
     </select>
 
     <insert id="insertGradeInfo" parameterType="GradeInfo" useGeneratedKeys="true" keyProperty="gradeId">

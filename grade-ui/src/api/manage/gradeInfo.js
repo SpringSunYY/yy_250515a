@@ -9,6 +9,14 @@ export function listGradeInfo(query) {
   })
 }
 
+export function staticsGradeInfo(query) {
+  return request({
+    url: '/manage/gradeInfo/statics',
+    method: 'get',
+    params: query
+  })
+}
+
 // 查询学生成绩信息详细
 export function getGradeInfo(gradeId) {
   return request({

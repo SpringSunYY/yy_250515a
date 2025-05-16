@@ -20,6 +20,7 @@ import com.lz.common.utils.DateUtils;
 import javax.annotation.Resource;
 
 import com.lz.manage.model.domain.CourseInfo;
+import com.lz.manage.model.vo.gradeInfo.GradeInfoStatics;
 import com.lz.manage.service.ICourseInfoService;
 import com.lz.system.service.ISysUserService;
 import org.springframework.stereotype.Service;
@@ -193,6 +194,14 @@ public class GradeInfoServiceImpl extends ServiceImpl<GradeInfoMapper, GradeInfo
             return Collections.emptyList();
         }
         return gradeInfoList.stream().map(GradeInfoVo::objToVo).collect(Collectors.toList());
+    }
+
+    @Override
+    public GradeInfoStatics statics(GradeInfo gradeInfo) {
+        if (!SecurityUtils.isAdmin(SecurityUtils.getUserId()) && SecurityUtils.hasRole("student")) {
+            gradeInfo.setUserId(SecurityUtils.getUserId());
+        }
+        return gradeInfoMapper.statics(gradeInfo);
     }
 
 }
