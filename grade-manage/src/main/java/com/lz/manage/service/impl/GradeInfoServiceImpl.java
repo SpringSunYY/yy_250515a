@@ -69,6 +69,9 @@ public class GradeInfoServiceImpl extends ServiceImpl<GradeInfoMapper, GradeInfo
      */
     @Override
     public List<GradeInfo> selectGradeInfoList(GradeInfo gradeInfo) {
+        if (!SecurityUtils.isAdmin(SecurityUtils.getUserId()) && SecurityUtils.hasRole("student")) {
+            gradeInfo.setUserId(SecurityUtils.getUserId());
+        }
         List<GradeInfo> gradeInfos = gradeInfoMapper.selectGradeInfoList(gradeInfo);
         for (GradeInfo info : gradeInfos) {
             SysUser sysUser = userService.selectUserById(info.getUserId());
